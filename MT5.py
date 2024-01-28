@@ -24,15 +24,27 @@ if account_info is not None:
     print(f"Balance: {account_info.balance}, Equity: {account_info.equity}")
 
 # prepare the buy request structure
-symbol = 'EURUSD'
-lot = 0.01
-
+symbol = 'XAUUSD.ecn'
 
 symbol_info = mt5.symbol_info(symbol)
 if symbol_info is None:
     print(symbol, "not found, can not call order_check()")
     mt5.shutdown()
     quit()
+# print(symbol_info)
+
+# if the symbol is unavailable in MarketWatch, add it
+if not symbol_info.visible:
+    print(symbol, "is not visible, trying to switch on")
+    if not mt5.symbol_select(symbol, True):
+        print("symbol_select({}}) failed, exit", symbol)
+        mt5.shutdown()
+        quit()
+
+lot = 0.1
+point = mt5.symbol_info(symbol).point
+price = mt5.symbol_info_tick(symbol).ask
+deviation = 20
 
 # Define strategy for opening a trade
 def should_open_trade():
@@ -49,21 +61,35 @@ while True:
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
             "volume": lot,
-            "type": mt5.ORDER_TYPE_BUY,
-            "price": mt5.symbol_info_tick(symbol),
-            "sl": 0,  # Stop loss
-            "tp": 0,  # Take profit
-            "deviation": 20,
+            "type": mt5.mt5.ORDER_TYPE_BUY,
+            "price": price,
+            "sl": price - 100 * point,  # Stop loss
+            "tp": price + 100 * point,  # Take profit
+            "deviation": deviation,
             "magic": 234000,
             "comment": "Python script trade",
-            "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_IOC,
+            "type_time": mt5.ORDER_TIME,
+            "type_filling": mt5.ORDER_FILLING_FOK,
         }
 
-        # Send trade request
+        # send a trading request
         result = mt5.order_send(request)
-        if result != mt5.TRADE_RETCODE_DONE:
-            print("Failed to send order :(", result)
+        # check the execution result
+        print("1. order_send(): by {} {} lots at {} with deviation={} points".format(symbol, lot, price, deviation))
+        if result.retcode != mt5.TRADE_RETCODE_DONE:
+            print("2. order_send failed, retcode={}".format(result.retcode))
+            # request the result as a dictionary and display it element by element
+            result_dict = result._asdict()
+            for field in result_dict.keys():
+                print("   {}={}".format(field, result_dict[field]))
+                # if this is a trading request structure, display it element by element as well
+                if field == "request":
+                    traderequest_dict = result_dict[field]._asdict()
+                    for tradereq_filed in traderequest_dict:
+                        print("       traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
+            print("shutdown() and quit")
+            mt5.shutdown()
+            quit()
         else:
             print("Order successfully placed!")
 
