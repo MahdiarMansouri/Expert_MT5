@@ -5,7 +5,8 @@ import time
 account_number = 516701  # Replace with your account number
 password = 'p&X7pbw#AFyK'           # Replace with your password
 server = 'OtetGroup-MT5'               # Replace with your server
-path = 'C:\Program Files\MetaTrader 5\terminal64.exe'
+path = 'C:\Program Files\MetaTrader 5\\terminal64.exe'
+
 # Initialize MT5 connection
 account = mt5.initialize(path=path,
                          login=account_number,
@@ -13,7 +14,7 @@ account = mt5.initialize(path=path,
                          server=server,
                          portable=False)
 
-if not mt5.initialize(login=account_number, server=server, password=password):
+if not account:
     print("initialize() failed, error code =", mt5.last_error())
     quit()
 
@@ -24,16 +25,14 @@ if account_info is not None:
 
 # prepare the buy request structure
 symbol = 'EURUSD'
+lot = 0.01
+
 
 symbol_info = mt5.symbol_info(symbol)
 if symbol_info is None:
     print(symbol, "not found, can not call order_check()")
     mt5.shutdown()
     quit()
-
-# Define trading parameters
-symbol = 'EURUSD'
-lot = 0.01
 
 # Define strategy for opening a trade
 def should_open_trade():
