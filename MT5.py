@@ -61,14 +61,14 @@ while True:
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
             "volume": lot,
-            "type": mt5.mt5.ORDER_TYPE_BUY,
+            "type": mt5.ORDER_TYPE_BUY,
             "price": price,
             "sl": price - 100 * point,  # Stop loss
             "tp": price + 100 * point,  # Take profit
             "deviation": deviation,
             "magic": 234000,
             "comment": "Python script trade",
-            "type_time": mt5.ORDER_TIME,
+            "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": mt5.ORDER_FILLING_FOK,
         }
 
