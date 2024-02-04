@@ -1,5 +1,5 @@
 import MetaTrader5 as mt5
-from strategy import strategy
+from strategy import StrategyValidator
 import time
 
 # Configure your MT5 account details
@@ -50,61 +50,79 @@ if not symbol_info.visible:
         quit()
 
 # Order params
-lot = 1
+lot = 0.1
+action = mt5.TRADE_ACTION_DEAL
 point = mt5.symbol_info(symbol).point
 price = mt5.symbol_info_tick(symbol).ask
 deviation = 20
 
 # Strategy params
-count = 10
+last_n_bars = 10
 timeframe = mt5.TIMEFRAME_M1
+
+# Define StrategyValidator object
+SV = StrategyValidator(last_n_bars, timeframe, symbol)
 
 # Define strategy for sending order
 while True:
-    pin_bar_validation = strategy(count, timeframe, symbol)
-    print(f'PinBar Validation: {pin_bar_validation}')
+    comment, situation, trend = SV.pinbar_finder()
+    print(f'Comment: {comment}, \nPinBar Correction: {situation}')
 
     # Check if the strategy conditions are Ture
-    if pin_bar_validation:
-        # Define request structure for trade
-        request = {
-            "action": mt5.TRADE_ACTION_DEAL,
-            "symbol": symbol,
-            "volume": lot,
-            "type": mt5.ORDER_TYPE_BUY,
-            "price": price,
-            "sl": price - 100 * point,  # Stop loss
-            "tp": price + 100 * point,  # Take profit
-            "deviation": deviation,
-            "magic": 234000,
-            "comment": "Python script trade",
-            "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_FOK,
-        }
+    if situation == 1:
+        # check if the validator bar validate our pinbar
+        validator_comment, validation = SV.pinbar_validator()
+        print(f'Comment: {validator_comment}, \nPinBar Validation: {validation}')
+        if validation ==1:
+            # check trend for order type (buy or sell)
+            if trend == 'down':
+                order_type = mt5.ORDER_TYPE_BUY
+                tp = price + 100 * point
+                sl = price - 100 * point
+            else:
+                order_type = mt5.ORDER_TYPE_SELL
+                tp = price - 100 * point
+                sl = price + 100 * point
 
-        # send a trading request
-        result = mt5.order_send(request)
-        # check the execution result
-        print("1. order_send(): by {} {} lots at {} with deviation={} points".format(symbol, lot, price, deviation))
-        if result.retcode != mt5.TRADE_RETCODE_DONE:
-            print("2. order_send failed, retcode={}".format(result.retcode))
-            # request the result as a dictionary and display it element by element
-            result_dict = result._asdict()
-            for field in result_dict.keys():
-                print("   {}={}".format(field, result_dict[field]))
-                # if this is a trading request structure, display it element by element as well
-                if field == "request":
-                    traderequest_dict = result_dict[field]._asdict()
-                    for tradereq_filed in traderequest_dict:
-                        print("       traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
-            print("shutdown() and quit")
-            mt5.shutdown()
-            quit()
+            # Define request structure for trade
+            request = {
+                "action": action,
+                "symbol": symbol,
+                "volume": lot,
+                "type": order_type,
+                "price": price,
+                "sl": sl,  # Stop loss
+                "tp": tp,  # Take profit
+                "deviation": deviation,
+                "magic": 234000,
+                "comment": "Python script trade",
+                "type_time": mt5.ORDER_TIME_GTC,
+                "type_filling": mt5.ORDER_FILLING_FOK,
+            }
+
+            # send a trading request
+            result = mt5.order_send(request)
+            # check the execution result
+            print("1. order_send(): by {} {} lots at {} with deviation={} points".format(symbol, lot, price, deviation))
+            if result.retcode != mt5.TRADE_RETCODE_DONE:
+                print("2. order_send failed, retcode={}".format(result.retcode))
+                # request the result as a dictionary and display it element by element
+                result_dict = result._asdict()
+                for field in result_dict.keys():
+                    print("   {}={}".format(field, result_dict[field]))
+                    # if this is a trading request structure, display it element by element as well
+                    if field == "request":
+                        traderequest_dict = result_dict[field]._asdict()
+                        for tradereq_filed in traderequest_dict:
+                            print("       traderequest: {}={}".format(tradereq_filed, traderequest_dict[tradereq_filed]))
+                print("shutdown() and quit")
+                mt5.shutdown()
+                quit()
+            else:
+                print("Order successfully placed!", end='\n\n')
+                print('=' * 20)
         else:
-            print("Order successfully placed!", end='\n\n')
-            print('=' * 20)
-    else:
-        print('-' * 10)
+            print('-' * 10)
 
     time.sleep(60)
 

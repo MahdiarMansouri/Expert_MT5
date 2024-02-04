@@ -29,7 +29,6 @@ euraud_ticks = mt5.copy_ticks_from('EURAUD.ecn', datetime(2020, 1, 28, 13), 1000
 print(euraud_ticks)
 # request ticks from AUDUSD within 2019.04.01 13:00 - 2019.04.02 13:00
 audusd_ticks = mt5.copy_ticks_range('AUDUSD.ecn', datetime(2020, 1, 27, 13), datetime(2020, 1, 28, 13), mt5.COPY_TICKS_ALL)
-print(audusd_ticks)
 
 # get bars from different symbols in a number of ways
 eurusd_rates = mt5.copy_rates_from("EURUSD.ecn", mt5.TIMEFRAME_M1, datetime(2020, 1, 28, 13), 1000)

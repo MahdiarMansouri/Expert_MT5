@@ -20,7 +20,7 @@ if not mt5.initialize():
     quit()
 
 # prepare the buy request structure
-symbol = "USDJPY"
+symbol = "EURUSD.ecn"
 symbol_info = mt5.symbol_info(symbol)
 if symbol_info is None:
     print(symbol, "not found, can not call order_check()")
