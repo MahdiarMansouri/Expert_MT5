@@ -50,7 +50,7 @@ if not symbol_info.visible:
         quit()
 
 # Order params
-lot = 0.1
+lot = 1
 point = mt5.symbol_info(symbol).point
 price = mt5.symbol_info_tick(symbol).ask
 deviation = 20
@@ -61,8 +61,8 @@ timeframe = mt5.TIMEFRAME_M1
 
 # Define strategy for sending order
 while True:
-    (comment, pin_bar_validation) = strategy(count, timeframe, symbol)
-    print(f'Comment: {comment} \nPinBar Validation: {pin_bar_validation}')
+    pin_bar_validation = strategy(count, timeframe, symbol)
+    print(f'PinBar Validation: {pin_bar_validation}')
 
     # Check if the strategy conditions are Ture
     if pin_bar_validation:

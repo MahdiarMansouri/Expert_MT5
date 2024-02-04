@@ -18,8 +18,8 @@ count = 10
 def strategy(count, timeframe, symbol):
     # finding last closed bar
     last_2_bars = mt5.copy_rates_from_pos(symbol, timeframe, 0, 2)
-    print(last_2_bars)
-    last_closed_bar = last_2_bars[-1]
+    # print(last_2_bars)
+    last_closed_bar = last_2_bars[0]
     # Defining direction of bar
     last_candle_color = 'green' if last_closed_bar['close'] - last_closed_bar['open'] > 0 else 'red'
     print(f'Last Closed bar: {last_closed_bar} \n and last closed bar color {last_candle_color}')
@@ -68,5 +68,4 @@ def strategy(count, timeframe, symbol):
             else:
                 return False
     else:
-        comment = 'Its not PinBar...'
-        return comment, False
+        return False
