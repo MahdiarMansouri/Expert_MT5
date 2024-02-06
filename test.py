@@ -56,13 +56,14 @@ lot = 0.1
 last_n_bars = 10
 timeframe = mt5.TIMEFRAME_M1
 
-
-vbar = mt5.copy_rates_from_pos(symbol, timeframe, 1, 1)
-pbar = mt5.copy_rates_from_pos(symbol, timeframe, 2, 1)
-st = SetOrders(vbar, pbar, symbol, lot, timeframe)
-r = st.set_buy_order()
-# print(r)
-print(st.check_order(r))
+while True:
+    vbar = mt5.copy_rates_from_pos(symbol, timeframe, 1, 1)
+    pbar = mt5.copy_rates_from_pos(symbol, timeframe, 2, 1)
+    st = SetOrders(vbar, pbar, symbol, lot, timeframe)
+    r = st.set_buy_order()
+    # print(r)
+    print(st.check_order(r))
+    time.sleep(5)
 
 # Shutdown the MT5 connection
 mt5.shutdown()
