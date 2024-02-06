@@ -32,7 +32,7 @@ class SetOrders:
             "tp": None,
             "deviation": self.deviation,
             "magic": self.magic,
-            "comment": "Python Expert Trade",
+            "comment": "1 - Python Expert Trade",
             "type_time": self.type_time,
             "type_filling": self.type_filling,
         }
@@ -41,11 +41,11 @@ class SetOrders:
         order_type = mt5.ORDER_TYPE_BUY
         e = self.validator_bar['close'] - self.pin_bar['low']
         step = e[0] + (self.spread * self.point)
-        print(f'step => {step}')
-        tp = self.buy_price + step
-        print(f'tp => {tp}')
+        print(f'step => {step:.2f}')
+        tp = self.buy_price + 2 * step
+        print(f'tp => {tp:.2f}')
         sl = self.buy_price - step
-        print(f'sl => {sl}')
+        print(f'sl => {sl:.2f}')
         self.request['type'] = order_type
         self.request['price'] = self.buy_price
         self.request['sl'] = sl
@@ -63,11 +63,11 @@ class SetOrders:
         order_type = mt5.ORDER_TYPE_SELL
         e = self.pin_bar['high'] - self.validator_bar['close']
         step = e[0] + (self.spread * self.point)
-        print(f'step => {step[0]}')
-        tp = self.sell_price - step[0]
-        print(f'tp => {tp}')
-        sl = self.sell_price + 2 * step[0]
-        print(f'sl => {sl}')
+        print(f'step => {step:.2f}')
+        tp = self.sell_price - 2 * step
+        print(f'tp => {tp:.2f}')
+        sl = self.sell_price + step
+        print(f'sl => {sl:.2f}')
         self.request['type'] = order_type
         self.request['price'] = self.buy_price
         self.request['sl'] = sl

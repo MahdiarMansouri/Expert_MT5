@@ -81,13 +81,7 @@ while True:
             print(f'Order situation: {order_situation}')
 
     else:
-        for i in range(60):
-            print(i+1)
-            time.sleep(1)
+        print('waiting for next bar ...')
+        time.sleep(60)
 
-        # time.sleep(60)
     print('_' * 100)
-
-
-# Shutdown the MT5 connection
-# mt5.shutdown()
