@@ -16,7 +16,7 @@ class StrategyValidator:
 
         # Defining direction of bar
         last_candle_color = 'green' if last_closed_bar['close'] - last_closed_bar['open'] > 0 else 'red'
-        print(f'   Last Closed bar: {last_closed_bar} \n   and last closed bar color: {last_candle_color}')
+        last_closed_bar_time = datetime.fromtimestamp(last_closed_bar['time'][0])
 
         # Defining values of bar parts (body, shadow up, shadow down)
         body = np.abs(last_closed_bar['close'] - last_closed_bar['open'])
@@ -29,6 +29,9 @@ class StrategyValidator:
             shadow_down = last_closed_bar['close'] - last_closed_bar['low']
 
         # Show details of candle
+        print(
+            f"Last Closed Bar ==> Time: {last_closed_bar_time}, Open: {last_closed_bar['open']}, High: {last_closed_bar['high']}, Low: {last_closed_bar['low']}, "
+            f"Close: {last_closed_bar['close']}, Color: {last_candle_color}")
         print(f'shadow up => {shadow_up[0]:.2f}')
         print(f'shadow down => {shadow_down[0]:.2f}')
         print(f'body => {body[0]:.2f}')
@@ -44,12 +47,12 @@ class StrategyValidator:
                 bars = mt5.copy_rates_from_pos(self.symbol, self.timeframe, 0, self.last_n_bar)
 
                 # Display the bars
-                for bar in bars:
+                for idx, bar in enumerate(bars):
                     # Convert time in seconds to the datetime format
                     time_ = datetime.fromtimestamp(bar['time'])
                     candle_color = 'green' if bar['close'] - bar['open'] > 0 else 'red'
                     print(
-                        f"Time: {time_}, Open: {bar['open']}, High: {bar['high']}, Low: {bar['low']}, "
+                        f"Bar {idx + 1} ==> Time: {time_}, Open: {bar['open']}, High: {bar['high']}, Low: {bar['low']}, "
                         f"Close: {bar['close']}, Color: {candle_color}")
 
                 # Defining last n candles trend
@@ -58,18 +61,22 @@ class StrategyValidator:
                     self.trend = 'down'
                     # Check the valid pin bar against trend
                     if (shadow_down / 3) > shadow_up:
-                        comment = 'Last {} Bars Trend: {}, PinBar: {}'.format(str(self.last_n_bar), self.trend, 'Correct')
+                        comment = 'Last {} Bars Trend: {}, PinBar: {}'.format(str(self.last_n_bar), self.trend,
+                                                                              'Correct')
                         return comment, 1, self.trend
                     else:
-                        comment = 'Last {} Bars Trend: {}, PinBar: {}'.format(str(self.last_n_bar), self.trend, 'Incorrect')
+                        comment = 'Last {} Bars Trend: {}, PinBar: {}'.format(str(self.last_n_bar), self.trend,
+                                                                              'Incorrect')
                         return comment, 0, self.trend
                 else:
                     self.trend = 'up'
                     if (shadow_up / 3) > shadow_down:
-                        comment = 'Last {} Bars Trend: {}, PinBar: {}'.format(str(self.last_n_bar), self.trend, 'Correct')
+                        comment = 'Last {} Bars Trend: {}, PinBar: {}'.format(str(self.last_n_bar), self.trend,
+                                                                              'Correct')
                         return comment, 1, self.trend
                     else:
-                        comment = 'Last {} Bars Trend: {}, PinBar: {}'.format(str(self.last_n_bar), self.trend, 'Incorrect')
+                        comment = 'Last {} Bars Trend: {}, PinBar: {}'.format(str(self.last_n_bar), self.trend,
+                                                                              'Incorrect')
                         return comment, 0, self.trend
             else:
                 comment = 'Its not PinBar...'
@@ -78,10 +85,8 @@ class StrategyValidator:
             comment = 'the bar is smaller than spread amount!'
             return comment, 0, 'no trend..'
 
-
     def pinbar_validator(self):
         # check when the new candle (validator bar) is closed and our pinbar go to the third position in chart
-        print('... Waiting for validator bar ... ')
         counter = 1
         while True:
             time.sleep(1)

@@ -9,6 +9,15 @@ password = 'p&X7pbw#AFyK'  # Replace with your password
 server = 'OtetGroup-MT5'  # Replace with your server
 path = 'C:\Program Files\MetaTrader 5\\terminal64.exe'
 
+
+### Parameters ###
+# Order params
+symbol = 'XAUUSD.ecn'
+lot = 0.1
+# Strategy params
+last_n_bars = 10
+timeframe = mt5.TIMEFRAME_M1
+
 # Initialize MT5 connection
 account = mt5.initialize(path=path,
                          login=account_number,
@@ -25,9 +34,6 @@ account_info = mt5.account_info()
 if account_info is not None:
     print(f"Balance: {account_info.balance}, Equity: {account_info.equity}")
     print('_' * 30)
-
-# prepare the buy request structure
-symbol = 'XAUUSD.ecn'
 
 symbol_info = mt5.symbol_info(symbol)
 if symbol_info is None:
@@ -49,26 +55,20 @@ if not symbol_info.visible:
         mt5.shutdown()
         quit()
 
-# Order params
-lot = 0.1
-
-# Strategy params
-last_n_bars = 10
-timeframe = mt5.TIMEFRAME_M1
-
 # Define StrategyValidator object
 SV = StrategyValidator(last_n_bars, timeframe, symbol)
 
 # Define strategy for sending order
 while True:
     comment, situation, trend = SV.pinbar_finder()
-    print(f'Comment: {comment}, \nPinBar Correction: {situation}')
+    print(f'Comment: {comment} \nPinBar Correction: {situation}')
 
     # Check if the strategy conditions are Ture
     if situation == 1:
+        print(f'... Waiting for Validator Bar to {"Buy" if trend=="down" else "Sell"} ...')
         # check if the validator bar validate our pinbar
         validator_comment, validator_bar, pin_bar, validation = SV.pinbar_validator()
-        print(f'Comment: {validator_comment}, \nPinBar Validation: {validation}')
+        print(f'Comment: {validator_comment} \nPinBar Validation: {validation}')
         if validation == 1:
             set_order = SetOrders(validator_bar, pin_bar, symbol, lot, timeframe)
             # check trend for order type (buy or sell)
