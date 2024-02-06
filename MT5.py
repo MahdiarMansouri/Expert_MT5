@@ -5,8 +5,8 @@ import time
 
 # Configure your MT5 account details
 account_number = 516701  # Replace with your account number
-password = 'p&X7pbw#AFyK'           # Replace with your password
-server = 'OtetGroup-MT5'               # Replace with your server
+password = 'p&X7pbw#AFyK'  # Replace with your password
+server = 'OtetGroup-MT5'  # Replace with your server
 path = 'C:\Program Files\MetaTrader 5\\terminal64.exe'
 
 # Initialize MT5 connection
@@ -41,7 +41,6 @@ else:
     print(f"Volume step: {symbol_info.volume_step}")
     print('_' * 30)
 
-
 # if the symbol is unavailable in MarketWatch, add it
 if not symbol_info.visible:
     print(symbol, "is not visible, trying to switch on symbol on your MarketWatch!")
@@ -52,10 +51,6 @@ if not symbol_info.visible:
 
 # Order params
 lot = 0.1
-action = mt5.TRADE_ACTION_DEAL
-point = mt5.symbol_info(symbol).point
-price = mt5.symbol_info_tick(symbol).ask
-deviation = 20
 
 # Strategy params
 last_n_bars = 10
@@ -72,10 +67,10 @@ while True:
     # Check if the strategy conditions are Ture
     if situation == 1:
         # check if the validator bar validate our pinbar
-        validator_comment, validation = SV.pinbar_validator()
+        validator_comment, validator_bar, pin_bar, validation = SV.pinbar_validator()
         print(f'Comment: {validator_comment}, \nPinBar Validation: {validation}')
-        if validation ==1:
-            set_order = SetOrders(symbol, lot, timeframe)
+        if validation == 1:
+            set_order = SetOrders(validator_bar, pin_bar, symbol, lot, timeframe)
             # check trend for order type (buy or sell)
             if trend == 'down':
                 result = set_order.set_buy_order()
@@ -84,10 +79,15 @@ while True:
                 result = set_order.set_sell_order()
                 order_situation = set_order.check_order(result)
             print(f'Order situation: {order_situation}')
-        else:
-            print('-' * 10)
 
-    time.sleep(60)
+    else:
+        for i in range(60):
+            print(i+1)
+            time.sleep(1)
+
+        # time.sleep(60)
+    print('_' * 100)
+
 
 # Shutdown the MT5 connection
-mt5.shutdown()
+# mt5.shutdown()

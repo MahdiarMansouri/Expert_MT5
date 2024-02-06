@@ -1,8 +1,11 @@
 import MetaTrader5 as mt5
+import numpy as np
 
 
 class SetOrders:
-    def __init__(self, symbol, lot, timeframe):
+    def __init__(self, validator_bar, pin_bar,  symbol, lot, timeframe):
+        self.validator_bar = validator_bar
+        self.pin_bar = pin_bar
         self.symbol = symbol
         self.lot = lot
         self.timeframe = timeframe
@@ -33,8 +36,9 @@ class SetOrders:
 
     def set_buy_order(self):
         order_type = mt5.ORDER_TYPE_BUY
-        tp = self.buy_price + 100 * self.point
-        sl = self.buy_price - 100 * self.point
+        step = (self.validator_bar['close'] - self.pin_bar['low']) + (1.5 * (np.abs(self.buy_price - self.sell_price)))
+        tp = self.buy_price + step
+        sl = self.buy_price - step
         self.request['type'] = order_type
         self.request['price'] = self.buy_price
         self.request['sl'] = sl
@@ -50,8 +54,9 @@ class SetOrders:
 
     def set_sell_order(self):
         order_type = mt5.ORDER_TYPE_SELL
-        tp = self.sell_price - 100 * self.point
-        sl = self.sell_price + 100 * self.point
+        step = (self.pin_bar['high'] - self.validator_bar['close']) + (1.5 * (np.abs(self.buy_price - self.sell_price)))
+        tp = self.sell_price - step
+        sl = self.sell_price + step
         self.request['type'] = order_type
         self.request['price'] = self.buy_price
         self.request['sl'] = sl

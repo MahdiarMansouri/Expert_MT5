@@ -3,17 +3,6 @@ from datetime import datetime
 import time
 import numpy as np
 
-# # Connect to MetaTrader 5
-# if not mt5.initialize():
-#     print("initialize() failed")
-#     mt5.shutdown()
-#     quit()
-#
-# # Define the symbol and timeframe
-# symbol = "XAUUSD.ecn"
-# timeframe = mt5.TIMEFRAME_M1  # 1-minute timeframe
-# last_n_bars = 10
-#
 
 class StrategyValidator:
     def __init__(self, last_n_bars, timeframe, symbol):
@@ -27,7 +16,7 @@ class StrategyValidator:
 
         # Defining direction of bar
         last_candle_color = 'green' if last_closed_bar['close'] - last_closed_bar['open'] > 0 else 'red'
-        print(f'Last Closed bar: {last_closed_bar} \n and last closed bar color: {last_candle_color}')
+        print(f'   Last Closed bar: {last_closed_bar} \n   and last closed bar color: {last_candle_color}')
 
         # Defining values of bar parts (body, shadow up, shadow down)
         body = np.abs(last_closed_bar['close'] - last_closed_bar['open'])
@@ -39,13 +28,13 @@ class StrategyValidator:
             shadow_up = last_closed_bar['high'] - last_closed_bar['open']
             shadow_down = last_closed_bar['close'] - last_closed_bar['low']
 
-        # Defining pin bar
-        self.pin_bar = False
+        print(f'shadow up => {shadow_up[0]:.4f}')
+        print(f'shadow down => {shadow_down[0]:.4f}')
+        print(f'body => {body[0]:.4f}')
 
-        if shadow_up or shadow_down > body:
+        if shadow_up[0] > body[0] or shadow_down[0] > body[0]:
             self.pin_bar = last_closed_bar
 
-        if self.pin_bar:
             # Request the last n bars
             bars = mt5.copy_rates_from_pos(self.symbol, self.timeframe, 0, self.last_n_bar)
 
@@ -55,7 +44,8 @@ class StrategyValidator:
                 time_ = datetime.fromtimestamp(bar['time'])
                 candle_color = 'green' if bar['close'] - bar['open'] > 0 else 'red'
                 print(
-                    f"Time: {time_}, Open: {bar['open']}, High: {bar['high']}, Low: {bar['low']}, Close: {bar['close']}, Color: {candle_color}")
+                    f"Time: {time_}, Open: {bar['open']}, High: {bar['high']}, Low: {bar['low']}, "
+                    f"Close: {bar['close']}, Color: {candle_color}")
 
             # Defining last n candles trend
             candles_close_mean = np.mean(bars['close'])
@@ -83,22 +73,25 @@ class StrategyValidator:
     def pinbar_validator(self):
         # check when the new candle (validator bar) is closed and our pinbar go to the third position in chart
         print('... Waiting for validator bar ... ')
+        counter = 1
         while True:
             time.sleep(1)
+            print(counter)
             last_2_bar = mt5.copy_rates_from_pos(self.symbol, self.timeframe, 2, 1)
             if self.pin_bar == last_2_bar:
                 validator_bar = mt5.copy_rates_from_pos(self.symbol, self.timeframe, 1, 1)
                 if self.trend == 'down':
                     if validator_bar['close'] > self.pin_bar['close']:
                         comment = 'PinBar is Valid!  :) '
-                        return comment, 1
+                        return comment, validator_bar, self.pin_bar, 1
                     else:
                         comment = 'Unfortunately, PinBar is Invalid...  :( '
-                        return comment, 0
+                        return comment, 0, 0, 0
                 else:
                     if validator_bar['close'] < self.pin_bar['close']:
                         comment = 'PinBar is Valid!  :) '
-                        return comment, 1
+                        return comment, validator_bar, self.pin_bar, 1
                     else:
                         comment = 'Unfortunately, PinBar is Invalid...  :( '
-                        return comment, 0
+                        return comment, 0, 0, 0
+            counter += 1
